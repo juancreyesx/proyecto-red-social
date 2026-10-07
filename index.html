@@ -10,9 +10,12 @@
   <header>
     <h1>MiniRed</h1>
     <p>Home</p>
+    <button id="btn-notif" class="notif-boton">Notificaciones (0)</button>
   </header>
 
   <main>
+    <section id="panel-notif" class="panel-notif" hidden></section>
+
     <section class="nueva">
       <textarea id="texto" maxlength="280" placeholder="¿Qué estás pensando?"></textarea>
       <div class="barra">
@@ -26,6 +29,7 @@
 
   <script src="js/estructuras/lista-publicaciones.js"></script>
   <script src="js/estructuras/arbol-comentarios.js"></script>
+  <script src="js/estructuras/cola-notificaciones.js"></script>
   <script src="js/app.js"></script>
 </body>
 </html>

@@ -71,3 +71,22 @@ button:disabled { background: #9ca3af; cursor: not-allowed; }
   font: inherit;
 }
 .form-comentario button { padding: 6px 14px; }
+
+/* Notificaciones (etapa 3) */
+.notif-boton { margin-left: auto; background: #fff; color: #1d4ed8; font-weight: 600; }
+.notif-boton:hover { background: #dbeafe; }
+.panel-notif {
+  background: #fff;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 16px;
+  box-shadow: 0 1px 3px rgba(0,0,0,.08);
+  border-left: 4px solid #1d4ed8;
+}
+.panel-notif[hidden] { display: none; }
+.panel-notif h2 { margin: 0 0 4px; font-size: 1.05rem; }
+.panel-notif .ayuda { margin: 0 0 12px; color: #6b7280; font-size: .85rem; }
+.panel-notif ol { margin: 0 0 12px; padding-left: 22px; }
+.panel-notif li { padding: 4px 0; font-size: .95rem; }
+.panel-notif li.siguiente { font-weight: 600; }
+.panel-notif .acciones { display: flex; gap: 8px; }

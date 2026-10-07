@@ -9,7 +9,7 @@ Integrante: Juan Camilo Reyes Cardona - cód. 2235983
 |---|---|---|---|
 | 1 | Lista enlazada | Lista de publicaciones | Etapa 1 (hecha) |
 | 2 | Árbol n-ario | Comentarios y respuestas | Etapa 2 (hecha) |
-| 3 | Cola | Notificaciones | Pendiente |
+| 3 | Cola | Notificaciones | Etapa 3 (hecha) |
 | 4 | Grafo | Amigos | Pendiente |
 | 5 | BST | Búsqueda de usuarios | Pendiente |
 

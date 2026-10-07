@@ -1,14 +1,87 @@
 // Lógica de la pantalla Home
 // Etapa 1: publicaciones (lista enlazada). Etapa 2: comentarios (árbol n-ario).
+// Etapa 3: notificaciones (cola).
 const USUARIO_ACTUAL = "Juan Camilo";
 const lista = new ListaPublicaciones();
+const notificaciones = new ColaNotificaciones();
 let siguienteId = 1;          // sirve para publicaciones y comentarios
 let formularioAbierto = null; // dónde está abierto el cuadro de respuesta: "p3" o "c7"
+let panelNotifAbierto = false;
 
 const campoTexto = document.getElementById("texto");
 const contador = document.getElementById("contador");
 const botonPublicar = document.getElementById("btn-publicar");
 const feed = document.getElementById("feed");
+const botonNotif = document.getElementById("btn-notif");
+const panelNotif = document.getElementById("panel-notif");
+
+/* ---------- Notificaciones (cola) ---------- */
+function resumir(texto) {
+  return texto.length > 30 ? texto.slice(0, 30) + "…" : texto;
+}
+
+// Con un solo usuario, las notificaciones salen de tu propia actividad (simulación).
+// Cuando haya amigos (etapa 4), las acciones de ellos generarán estos avisos.
+function notificar(mensaje) {
+  notificaciones.encolar({
+    mensaje: mensaje,
+    hora: new Date().toLocaleTimeString("es-CO"),
+  });
+  dibujarNotificaciones();
+}
+
+function atenderSiguiente() {
+  notificaciones.descolar();
+  dibujarNotificaciones();
+}
+
+function vaciarNotificaciones() {
+  notificaciones.vaciar();
+  dibujarNotificaciones();
+}
+
+function dibujarNotificaciones() {
+  botonNotif.textContent = "Notificaciones (" + notificaciones.size() + ")";
+  panelNotif.hidden = !panelNotifAbierto;
+  panelNotif.innerHTML = "";
+  if (!panelNotifAbierto) return;
+
+  const titulo = document.createElement("h2");
+  titulo.textContent = "Notificaciones";
+  const ayuda = document.createElement("p");
+  ayuda.className = "ayuda";
+  ayuda.textContent = "Se atienden en orden de llegada: la primera que llega es la primera que sale (cola).";
+  panelNotif.append(titulo, ayuda);
+
+  if (notificaciones.isEmpty()) {
+    const vacio = document.createElement("p");
+    vacio.className = "vacio";
+    vacio.textContent = "No tienes notificaciones pendientes.";
+    panelNotif.append(vacio);
+    return;
+  }
+
+  const ol = document.createElement("ol");
+  notificaciones.recorrer().forEach((n, i) => {
+    const li = document.createElement("li");
+    li.textContent = n.hora + " - " + n.mensaje;
+    if (i === 0) li.className = "siguiente"; // el primero es el siguiente en atender
+    ol.append(li);
+  });
+
+  const acciones = document.createElement("div");
+  acciones.className = "acciones";
+  acciones.append(
+    boton("Atender siguiente", atenderSiguiente),
+    boton("Vaciar", vaciarNotificaciones)
+  );
+  panelNotif.append(ol, acciones);
+}
+
+botonNotif.addEventListener("click", () => {
+  panelNotifAbierto = !panelNotifAbierto;
+  dibujarNotificaciones();
+});
 
 /* ---------- Publicaciones ---------- */
 function crearPublicacion() {
@@ -33,6 +106,7 @@ function darLikePublicacion(id) {
   const publicacion = lista.buscarPorId(id);
   if (publicacion) {
     publicacion.likes++;
+    notificar("Me gusta en tu publicación «" + resumir(publicacion.texto) + "»");
     dibujarFeed();
   }
 }
@@ -53,6 +127,12 @@ function agregarComentario(publicacion, idPadre, texto) {
     fecha: new Date().toLocaleString("es-CO"),
     likes: 0,
   });
+  if (idPadre === null) {
+    notificar("Nuevo comentario en «" + resumir(publicacion.texto) + "»");
+  } else {
+    const padre = publicacion.comentarios.buscarNodo(idPadre);
+    notificar("Nueva respuesta a tu comentario «" + resumir(padre.value.texto) + "»");
+  }
   formularioAbierto = null;
   dibujarFeed();
 }
@@ -61,6 +141,7 @@ function darLikeComentario(publicacion, idComentario) {
   const nodo = publicacion.comentarios.buscarNodo(idComentario);
   if (nodo) {
     nodo.value.likes++;
+    notificar("Me gusta en tu comentario «" + resumir(nodo.value.texto) + "»");
     dibujarFeed();
   }
 }
@@ -193,3 +274,4 @@ botonPublicar.addEventListener("click", crearPublicacion);
 
 actualizarContador();
 dibujarFeed();
+dibujarNotificaciones();
