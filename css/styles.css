@@ -54,3 +54,20 @@ button:disabled { background: #9ca3af; cursor: not-allowed; }
 .acciones button { background: #e5e7eb; color: #111827; padding: 6px 14px; }
 .acciones button:hover { background: #d1d5db; }
 .vacio { text-align: center; color: #6b7280; padding: 32px 0; }
+
+/* Comentarios (etapa 2) */
+.comentarios { margin-top: 12px; border-top: 1px solid #e5e7eb; padding-top: 8px; }
+.comentario { padding: 8px 0 8px 12px; border-left: 2px solid #e5e7eb; margin-top: 8px; }
+.comentario .autor { font-weight: 600; font-size: .9rem; }
+.comentario .fecha { color: #6b7280; font-size: .75rem; margin-left: 8px; }
+.comentario p { margin: 4px 0 6px; font-size: .95rem; }
+.comentario .acciones button { padding: 4px 10px; font-size: .8rem; }
+.form-comentario { display: flex; gap: 8px; margin-top: 8px; }
+.form-comentario input {
+  flex: 1;
+  border: 1px solid #d1d5db;
+  border-radius: 999px;
+  padding: 6px 12px;
+  font: inherit;
+}
+.form-comentario button { padding: 6px 14px; }
