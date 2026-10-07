@@ -116,5 +116,12 @@ docs/       DOCUMENTO_FINAL.md (alcance, tecnologías y estructuras)
 
 ## Flujo de Git
 
-Una rama por entrega, integradas a `main` con *merge*: las etapas 1–4 (publicaciones, comentarios, notificaciones, amigos)
-y `juan-camilo-reyes` (backend, persistencia, búsqueda BST, pruebas y documentación).
+Ramas, todas integradas a `main` (`git branch --merged main`):
+
+| Rama | Contenido |
+|---|---|
+| `etapa-1-publicaciones` | Lista enlazada: publicaciones |
+| `etapa-2-comentarios` | Árbol n-ario: comentarios y respuestas |
+| `etapa-3-notificaciones` | Cola: notificaciones |
+| `etapa-4-amigos` | Grafo: amigos y sugerencias |
+| `juan-camilo-reyes` | Backend, MongoDB, BST (estructura 5), pruebas y documentación (integrada con *merge* a `main`) |
