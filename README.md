@@ -16,8 +16,10 @@ Docente: Jonathan López Londoño.
 
 | Qué | Enlace |
 |---|---|
-| Aplicación (frontend + backend) | _PENDIENTE: pegar aquí la URL de Render_ |
-| Repositorio | _PENDIENTE: pegar aquí la URL de GitHub_ |
+| Aplicación (frontend + backend) | https://proyecto-red-social-uek6.onrender.com |
+| Repositorio | https://github.com/juancreyesx/proyecto-red-social |
+
+> Nota: Render usa el plan gratuito, que se "duerme" tras un rato sin visitas; la primera carga puede tardar hasta un minuto.
 
 ## Las 5 estructuras de datos
 
