@@ -9,27 +9,36 @@
 <body>
   <header>
     <h1>MiniRed</h1>
-    <p>Home</p>
+    <nav>
+      <button id="nav-home" class="nav-boton activo">Home</button>
+      <button id="nav-amigos" class="nav-boton">Amigos</button>
+    </nav>
     <button id="btn-notif" class="notif-boton">Notificaciones (0)</button>
   </header>
 
   <main>
     <section id="panel-notif" class="panel-notif" hidden></section>
 
-    <section class="nueva">
-      <textarea id="texto" maxlength="280" placeholder="¿Qué estás pensando?"></textarea>
-      <div class="barra">
-        <span id="contador">0 / 280</span>
-        <button id="btn-publicar">Publicar</button>
-      </div>
-    </section>
+    <div id="vista-home">
+      <section class="nueva">
+        <textarea id="texto" maxlength="280" placeholder="¿Qué estás pensando?"></textarea>
+        <div class="barra">
+          <span id="contador">0 / 280</span>
+          <button id="btn-publicar">Publicar</button>
+        </div>
+      </section>
 
-    <section id="feed"></section>
+      <section id="feed"></section>
+    </div>
+
+    <div id="vista-amigos" hidden></div>
   </main>
 
   <script src="js/estructuras/lista-publicaciones.js"></script>
   <script src="js/estructuras/arbol-comentarios.js"></script>
   <script src="js/estructuras/cola-notificaciones.js"></script>
+  <script src="js/estructuras/grafo-amigos.js"></script>
   <script src="js/app.js"></script>
+  <script src="js/amigos.js"></script>
 </body>
 </html>

@@ -90,3 +90,27 @@ button:disabled { background: #9ca3af; cursor: not-allowed; }
 .panel-notif li { padding: 4px 0; font-size: .95rem; }
 .panel-notif li.siguiente { font-weight: 600; }
 .panel-notif .acciones { display: flex; gap: 8px; }
+
+/* Navegación y amigos (etapa 4) */
+nav { display: flex; gap: 4px; margin-left: 8px; }
+.nav-boton { background: transparent; color: #fff; opacity: .8; }
+.nav-boton:hover { background: rgba(255,255,255,.15); }
+.nav-boton.activo { background: rgba(255,255,255,.22); opacity: 1; font-weight: 600; }
+#vista-amigos[hidden], #vista-home[hidden] { display: none; }
+
+.tarjeta { background: #fff; border-radius: 12px; padding: 16px; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+.tarjeta h2 { margin: 0 0 4px; font-size: 1.05rem; }
+.tarjeta .ayuda { margin: 0 0 12px; color: #6b7280; font-size: .85rem; }
+.persona { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-top: 1px solid #f3f4f6; }
+.persona:first-of-type { border-top: 0; }
+.avatar {
+  width: 38px; height: 38px; border-radius: 50%;
+  background: #dbeafe; color: #1d4ed8; font-weight: 700;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.persona .datos { flex: 1; min-width: 0; }
+.persona .nombre { font-weight: 600; }
+.persona .detalle { color: #6b7280; font-size: .8rem; }
+.persona button { padding: 6px 14px; font-size: .85rem; }
+.btn-peligro { background: #e5e7eb; color: #111827; }
+.btn-peligro:hover { background: #fecaca; }
