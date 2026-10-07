@@ -1,24 +1,10 @@
-// Etapa 4: página de Amigos (grafo) y navegación entre Home y Amigos.
-// Usa funciones de app.js (notificar, boton) y la constante USUARIO_ACTUAL.
-const red = new Grafo();
+// Página de Amigos: grafo (amigos y sugerencias) + búsqueda de usuarios (BST).
+// Usa lo definido en app.js: red, arbolUsuarios, ejecutar, boton y USUARIO_ACTUAL.
+let textoBusqueda = "";
 
-// Personas de ejemplo (simulan los demás usuarios de la red)
-["Camila Ortiz", "Andrés Mejía", "Valentina Ruiz", "Santiago Pérez", "Laura Gómez", "Mateo Rojas"]
-  .forEach((nombre) => red.addNode(nombre));
-red.addNode(USUARIO_ACTUAL);
-
-// Amistades iniciales (aristas)
-[
-  [USUARIO_ACTUAL, "Camila Ortiz"],
-  [USUARIO_ACTUAL, "Laura Gómez"],
-  ["Camila Ortiz", "Andrés Mejía"],
-  ["Camila Ortiz", "Valentina Ruiz"],
-  ["Laura Gómez", "Valentina Ruiz"],
-  ["Andrés Mejía", "Santiago Pérez"],
-  ["Valentina Ruiz", "Santiago Pérez"],
-  ["Santiago Pérez", "Mateo Rojas"],
-].forEach(([a, b]) => red.addEdge(a, b));
-
+function enComun(n) {
+  return n + (n === 1 ? " amigo en común" : " amigos en común");
+}
 const vistaHome = document.getElementById("vista-home");
 const vistaAmigos = document.getElementById("vista-amigos");
 const navHome = document.getElementById("nav-home");
@@ -34,16 +20,11 @@ function mostrarVista(nombre) {
 }
 
 function agregarAmigo(nombre) {
-  if (red.addEdge(USUARIO_ACTUAL, nombre)) {
-    notificar(nombre + " ahora es tu amigo");
-    dibujarAmigos();
-  }
+  return ejecutar(() => api.crearAmistad(USUARIO_ACTUAL, nombre));
 }
 
 function eliminarAmigo(nombre) {
-  if (red.removeEdge(USUARIO_ACTUAL, nombre)) {
-    dibujarAmigos();
-  }
+  return ejecutar(() => api.borrarAmistad(USUARIO_ACTUAL, nombre));
 }
 
 function crearPersona(nombre, detalle, textoBoton, claseBoton, alHacerClic) {
@@ -71,6 +52,75 @@ function crearPersona(nombre, detalle, textoBoton, claseBoton, alHacerClic) {
   return fila;
 }
 
+// Dibuja solo los resultados de la búsqueda (así el cuadro de texto no pierde el foco al escribir)
+function dibujarResultados(contenedor) {
+  contenedor.innerHTML = "";
+  const texto = textoBusqueda.trim();
+  if (texto === "") return;
+
+  const { nombres, visitados } = arbolUsuarios.buscarPrefijo(texto);
+  const otros = nombres.filter((n) => n !== USUARIO_ACTUAL);
+
+  const info = document.createElement("p");
+  info.className = "ayuda";
+  info.textContent =
+    "El BST revisó " + visitados + " de " + arbolUsuarios.size + " usuarios (altura del árbol: " +
+    arbolUsuarios.altura() + ").";
+  contenedor.append(info);
+
+  if (otros.length === 0) {
+    const vacio = document.createElement("p");
+    vacio.className = "vacio";
+    vacio.textContent = "No hay usuarios que empiecen con «" + texto + "».";
+    contenedor.append(vacio);
+  }
+  otros.forEach((nombre) => {
+    if (red.areConnected(USUARIO_ACTUAL, nombre)) {
+      contenedor.append(crearPersona(nombre, "Ya es tu amigo", "Eliminar", "btn-peligro", () => eliminarAmigo(nombre)));
+    } else {
+      const cantidad = red.amigosEnComun(USUARIO_ACTUAL, nombre).length;
+      contenedor.append(crearPersona(nombre, enComun(cantidad), "Agregar", null, () => agregarAmigo(nombre)));
+    }
+  });
+
+  // Si el nombre exacto no existe, se puede registrar (inserta en la base de datos y en el BST)
+  if (texto.length >= 2 && arbolUsuarios.buscarExacto(texto) === null) {
+    const registrar = boton("Registrar a «" + texto + "» como nuevo usuario", () =>
+      ejecutar(() => api.crearUsuario(texto))
+    );
+    registrar.className = "btn-registrar";
+    contenedor.append(registrar);
+  }
+}
+
+function crearTarjetaBusqueda() {
+  const tarjeta = document.createElement("section");
+  tarjeta.className = "tarjeta";
+  const t = document.createElement("h2");
+  t.textContent = "Buscar personas";
+  const ayuda = document.createElement("p");
+  ayuda.className = "ayuda";
+  ayuda.textContent = "Escribe el inicio de un nombre. La búsqueda usa un árbol binario de búsqueda (BST).";
+
+  const campo = document.createElement("input");
+  campo.type = "search";
+  campo.id = "busqueda";
+  campo.placeholder = "Ej: ca, san, val...";
+  campo.maxLength = 60;
+  campo.value = textoBusqueda;
+
+  const resultados = document.createElement("div");
+  resultados.id = "resultados";
+  campo.addEventListener("input", () => {
+    textoBusqueda = campo.value;
+    dibujarResultados(resultados);
+  });
+
+  tarjeta.append(t, ayuda, campo, resultados);
+  dibujarResultados(resultados);
+  return tarjeta;
+}
+
 function dibujarAmigos() {
   vistaAmigos.innerHTML = "";
 
@@ -89,9 +139,9 @@ function dibujarAmigos() {
     tarjetaAmigos.append(vacio);
   }
   amigos.forEach((nombre) => {
-    const enComun = red.amigosEnComun(USUARIO_ACTUAL, nombre).length;
+    const cantidad = red.amigosEnComun(USUARIO_ACTUAL, nombre).length;
     tarjetaAmigos.append(
-      crearPersona(nombre, enComun + " amigos en común", "Eliminar", "btn-peligro", () => eliminarAmigo(nombre))
+      crearPersona(nombre, enComun(cantidad), "Eliminar", "btn-peligro", () => eliminarAmigo(nombre))
     );
   });
 
@@ -114,11 +164,11 @@ function dibujarAmigos() {
   }
   sugeridos.forEach((s) => {
     tarjetaSug.append(
-      crearPersona(s.nombre, s.enComun + " amigos en común", "Agregar", null, () => agregarAmigo(s.nombre))
+      crearPersona(s.nombre, enComun(s.enComun), "Agregar", null, () => agregarAmigo(s.nombre))
     );
   });
 
-  vistaAmigos.append(tarjetaAmigos, tarjetaSug);
+  vistaAmigos.append(crearTarjetaBusqueda(), tarjetaAmigos, tarjetaSug);
 }
 
 navHome.addEventListener("click", () => mostrarVista("home"));
