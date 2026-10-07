@@ -15,7 +15,7 @@ async function crear(req, res) {
 }
 
 async function darLike(req, res) {
-  const p = await Publicacion.findByIdAndUpdate(req.params.id, { $inc: { likes: 1 } }, { new: true });
+  const p = await Publicacion.findByIdAndUpdate(req.params.id, { $inc: { likes: 1 } }, { returnDocument: "after" });
   if (!p) throw new ErrorHttp(404, "La publicación no existe");
   await crearNotificacion(p.autor, "Me gusta en tu publicación «" + resumir(p.texto) + "»");
   res.json({ likes: p.likes });
