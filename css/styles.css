@@ -1,0 +1,56 @@
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  background: #f3f4f6;
+  color: #111827;
+}
+header {
+  background: #1d4ed8;
+  color: #fff;
+  padding: 16px 24px;
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+}
+header h1 { margin: 0; font-size: 1.5rem; }
+header p { margin: 0; opacity: .85; }
+main { max-width: 600px; margin: 24px auto; padding: 0 16px; }
+
+.nueva, .post {
+  background: #fff;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 16px;
+  box-shadow: 0 1px 3px rgba(0,0,0,.08);
+}
+textarea {
+  width: 100%;
+  min-height: 80px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  padding: 10px;
+  font: inherit;
+  resize: vertical;
+}
+.barra { display: flex; justify-content: space-between; align-items: center; margin-top: 8px; }
+#contador { color: #6b7280; font-size: .85rem; }
+button {
+  border: 0;
+  border-radius: 999px;
+  padding: 8px 18px;
+  font: inherit;
+  cursor: pointer;
+  background: #1d4ed8;
+  color: #fff;
+}
+button:hover { background: #1e40af; }
+button:disabled { background: #9ca3af; cursor: not-allowed; }
+
+.post .autor { font-weight: 600; }
+.post .fecha { color: #6b7280; font-size: .8rem; margin-left: 8px; }
+.post p { margin: 8px 0 12px; white-space: pre-wrap; word-break: break-word; }
+.acciones { display: flex; gap: 8px; }
+.acciones button { background: #e5e7eb; color: #111827; padding: 6px 14px; }
+.acciones button:hover { background: #d1d5db; }
+.vacio { text-align: center; color: #6b7280; padding: 32px 0; }
