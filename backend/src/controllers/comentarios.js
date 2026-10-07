@@ -40,7 +40,7 @@ async function crear(req, res) {
 }
 
 async function darLike(req, res) {
-  const c = await Comentario.findByIdAndUpdate(req.params.id, { $inc: { likes: 1 } }, { new: true });
+  const c = await Comentario.findByIdAndUpdate(req.params.id, { $inc: { likes: 1 } }, { returnDocument: "after" });
   if (!c) throw new ErrorHttp(404, "El comentario no existe");
   await crearNotificacion(c.autor, "Me gusta en tu comentario «" + resumir(c.texto) + "»");
   res.json({ likes: c.likes });
