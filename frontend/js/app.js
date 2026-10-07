@@ -1,10 +1,13 @@
-// Lógica de la pantalla Home
-// Etapa 1: publicaciones (lista enlazada). Etapa 2: comentarios (árbol n-ario).
-// Etapa 3: notificaciones (cola).
+// Lógica de la pantalla Home y carga de datos.
+// Los datos viven en MongoDB (backend). Al cargar, el servidor entrega todo en "crudo"
+// y aquí lo reconstruimos en las 5 estructuras de datos:
+//   publicaciones -> lista enlazada | comentarios -> árbol n-ario | notificaciones -> cola
+//   usuarios + amistades -> grafo   | usuarios -> árbol binario de búsqueda (BST)
 const USUARIO_ACTUAL = "Juan Camilo";
-const lista = new ListaPublicaciones();
-const notificaciones = new ColaNotificaciones();
-let siguienteId = 1;          // sirve para publicaciones y comentarios
+let lista = new ListaPublicaciones();
+let notificaciones = new ColaNotificaciones();
+let red = new Grafo();
+let arbolUsuarios = new ArbolUsuarios();
 let formularioAbierto = null; // dónde está abierto el cuadro de respuesta: "p3" o "c7"
 let panelNotifAbierto = false;
 
@@ -20,24 +23,12 @@ function resumir(texto) {
   return texto.length > 30 ? texto.slice(0, 30) + "…" : texto;
 }
 
-// Con un solo usuario, las notificaciones salen de tu propia actividad (simulación).
-// Cuando haya amigos (etapa 4), las acciones de ellos generarán estos avisos.
-function notificar(mensaje) {
-  notificaciones.encolar({
-    mensaje: mensaje,
-    hora: new Date().toLocaleTimeString("es-CO"),
-  });
-  dibujarNotificaciones();
+async function atenderSiguiente() {
+  await ejecutar(() => api.atenderNotificacion(USUARIO_ACTUAL));
 }
 
-function atenderSiguiente() {
-  notificaciones.descolar();
-  dibujarNotificaciones();
-}
-
-function vaciarNotificaciones() {
-  notificaciones.vaciar();
-  dibujarNotificaciones();
+async function vaciarNotificaciones() {
+  await ejecutar(() => api.vaciarNotificaciones(USUARIO_ACTUAL));
 }
 
 function dibujarNotificaciones() {
@@ -83,72 +74,81 @@ botonNotif.addEventListener("click", () => {
   dibujarNotificaciones();
 });
 
-/* ---------- Publicaciones ---------- */
-function crearPublicacion() {
-  const texto = campoTexto.value.trim();
-  if (texto === "") return;
+/* ---------- Conexión con el backend ---------- */
+const aviso = document.getElementById("aviso");
 
-  lista.agregarAlInicio({
-    id: siguienteId++,
-    autor: USUARIO_ACTUAL,
-    texto: texto,
-    fecha: new Date().toLocaleString("es-CO"),
-    likes: 0,
-    comentarios: new ArbolComentarios(), // cada publicación tiene su árbol
+function mostrarAviso(mensaje) {
+  aviso.hidden = !mensaje;
+  aviso.textContent = mensaje || "";
+}
+
+// Reconstruye las estructuras de datos con lo que hay en la base de datos y vuelve a dibujar todo
+async function cargarEstado() {
+  const e = await api.estado(USUARIO_ACTUAL);
+
+  lista = new ListaPublicaciones();
+  e.publicaciones.forEach((p) => {            // vienen de la más vieja a la más nueva
+    const arbol = new ArbolComentarios();
+    p.comentarios.forEach((c) => arbol.agregar(c.padre, c)); // el padre siempre llega antes que sus hijas
+    lista.agregarAlInicio({ ...p, comentarios: arbol });
   });
 
+  notificaciones = new ColaNotificaciones();
+  e.notificaciones.forEach((n) => notificaciones.encolar(n));
+
+  red = new Grafo();
+  e.usuarios.forEach((u) => red.addNode(u));
+  e.amistades.forEach(([a, b]) => red.addEdge(a, b));
+
+  arbolUsuarios = ArbolUsuarios.desdeLista(e.usuarios);
+
+  mostrarAviso("");
+  dibujarFeed();
+  dibujarNotificaciones();
+  if (typeof dibujarAmigos === "function" && !vistaAmigos.hidden) dibujarAmigos();
+}
+
+// Ejecuta una acción contra el API y recarga; si algo falla muestra el mensaje en pantalla
+async function ejecutar(accion) {
+  try {
+    await accion();
+    await cargarEstado();
+  } catch (error) {
+    mostrarAviso(error.message);
+  }
+}
+
+/* ---------- Publicaciones ---------- */
+async function crearPublicacion() {
+  const texto = campoTexto.value.trim();
+  if (texto === "") return;
+  await ejecutar(() => api.crearPublicacion(USUARIO_ACTUAL, texto));
   campoTexto.value = "";
   actualizarContador();
-  dibujarFeed();
 }
 
 function darLikePublicacion(id) {
-  const publicacion = lista.buscarPorId(id);
-  if (publicacion) {
-    publicacion.likes++;
-    notificar("Me gusta en tu publicación «" + resumir(publicacion.texto) + "»");
-    dibujarFeed();
-  }
+  return ejecutar(() => api.likePublicacion(id));
 }
 
 function borrarPublicacion(id) {
-  lista.eliminar(id);
-  dibujarFeed();
+  return ejecutar(() => api.borrarPublicacion(id));
 }
 
 /* ---------- Comentarios ---------- */
-function agregarComentario(publicacion, idPadre, texto) {
+async function agregarComentario(publicacion, idPadre, texto) {
   texto = texto.trim();
   if (texto === "") return;
-  publicacion.comentarios.agregar(idPadre, {
-    id: siguienteId++,
-    autor: USUARIO_ACTUAL,
-    texto: texto,
-    fecha: new Date().toLocaleString("es-CO"),
-    likes: 0,
-  });
-  if (idPadre === null) {
-    notificar("Nuevo comentario en «" + resumir(publicacion.texto) + "»");
-  } else {
-    const padre = publicacion.comentarios.buscarNodo(idPadre);
-    notificar("Nueva respuesta a tu comentario «" + resumir(padre.value.texto) + "»");
-  }
   formularioAbierto = null;
-  dibujarFeed();
+  await ejecutar(() => api.crearComentario(publicacion.id, USUARIO_ACTUAL, texto, idPadre));
 }
 
 function darLikeComentario(publicacion, idComentario) {
-  const nodo = publicacion.comentarios.buscarNodo(idComentario);
-  if (nodo) {
-    nodo.value.likes++;
-    notificar("Me gusta en tu comentario «" + resumir(nodo.value.texto) + "»");
-    dibujarFeed();
-  }
+  return ejecutar(() => api.likeComentario(idComentario));
 }
 
 function borrarComentario(publicacion, idComentario) {
-  publicacion.comentarios.eliminar(idComentario);
-  dibujarFeed();
+  return ejecutar(() => api.borrarComentario(idComentario));
 }
 
 /* ---------- Dibujo en pantalla ---------- */
@@ -273,5 +273,3 @@ campoTexto.addEventListener("input", actualizarContador);
 botonPublicar.addEventListener("click", crearPublicacion);
 
 actualizarContador();
-dibujarFeed();
-dibujarNotificaciones();
